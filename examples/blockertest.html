@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<script src="generic-blocker.js" data-blocker-config="1">
+  0,{
+    filterElements: [
+      'marquee',
+      'img[src*="google.com"]'
+    ],
+    filterSources: [
+      wholeUrl('*evil.js*'),
+      path('*/uponit.js*')
+    ],
+    filterConnectSources: [
+      'api.github.com'
+    ],
+    filterInlineScripts: [
+      /evil/
+    ],
+    filterTimers: [
+      /blockme/
+    ]
+  }
+</script>
+<html>
+<head>
+<title>wow</title>
+</head>
+<body>
+
+<script>
+alert('evil inline script!');
+</script>
+<img src="https://google.com/favicon.ico">
+<script src="evil.js"></script>
+<marquee>gh</marquee>
+<script src="uponit.js"></script>
+<script>
+var x = document.createElement('script');
+x.text = 'console.log(/ev'+'il/);';
+document.body.appendChild(x);
+
+setTimeout('console.log(/blockme/);', 2000);
+setTimeout('console.log(/test/);', 2000);
+
+fetch('https://api.github.com').then(function(res) {
+  return res.text();
+}).then(function (txt) {
+  console.log(txt);
+});
+</script>
+
+</body>
+</html>

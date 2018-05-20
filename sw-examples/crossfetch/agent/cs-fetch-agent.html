@@ -1,0 +1,69 @@
+<!--
+
+This is meant to be injected by the SW to allow any origin to fetch things from our origin...
+Of course this is insecure - it's an example.
+
+SW must also change headers/response so that:
+-> No X-Frame-Options
+-> CSP must not block embedding us (no frame-ancestors restriction, no sandbox disallowing scripts)
+
+-->
+
+<script>
+top.postMessage({command: 'cs-agent-ready'}, '*');
+</script>
+
+<script>
+const skipKeys = ['headers', 'body', 'bodyUsed'];
+
+async function encodeResponse(r)
+{
+ const retObj = {};
+ 
+ for (const k of Object.keys(Response.prototype))
+ {
+  if (!skipKeys.includes(k) && typeof r[k] !== 'function')
+  retObj[k] = r[k];
+ }
+ 
+ retObj.headers = [];
+ 
+ for (const e of r.headers.entries())
+ {
+  retObj.headers.push(e);
+ }
+ 
+ //future: instead of this await, just pass the readablestream
+ //currently that won't work since RS is not transferrable
+ const toTransfer = await r.arrayBuffer();
+ 
+ retObj.body = toTransfer;
+ 
+ return [retObj, toTransfer];
+}
+
+function encodeError({message, constructor: {name:ctor}, name})
+{
+ return {ctor, message, name};
+}
+
+addEventListener('message', async function(event)
+{
+ if (event.data && event.data.command === 'cs-agent-fetch')
+ {
+  const data = event.data.requestData;
+
+  try
+  {
+   const response = await fetch(data.url, data);
+   const [responseData, toTransfer] = await encodeResponse(response);
+   event.ports[0].postMessage({ok: true, reply: responseData}, toTransfer ? [toTransfer] : undefined);
+  }
+  catch(e)
+  {
+   event.ports[0].postMessage({ok: false, reply: encodeError(e)});
+  }
+  event.stopImmediatePropagation();
+ }
+});
+</script>

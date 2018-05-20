@@ -1,0 +1,98 @@
+<script>
+  /*
+  we want a stream that will:
+  - send something
+  - wait 10 seconds
+  - send another thing
+  - close itself
+
+  waith...
+  should we implement pull returning a promise?
+  push? how'd we know how much to push?
+  concepts...
+
+  will pull be called anyway?
+
+  FAIL, start shouldn't return a promise tied to completion
+  */
+  function sleep(seconds) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, seconds * 1000);
+    });
+  }
+  const stream = new ReadableStream({
+    start(controller) {
+      console.log('start called');
+      this.startStream(controller);
+      return true;
+    },
+    async startStream(controller) {
+      console.log('enqueuing');
+      controller.enqueue('1');
+      await sleep(10);
+      console.log('enqueuing');
+      controller.enqueue('2');
+      controller.close();
+    }
+    //pull is called when queue empty, but we won't help here...
+    //what if that's not defined?
+  });
+
+  /*
+    const reader = stream.getReader();
+    reader.read().then(function next({done, value}) {
+      console.log('readin self', done, value);
+      if (!done)
+      return reader.read().then(next);
+    });
+  */
+
+  console.log('creating fetch');
+
+  //is this even implemented?
+  fetch('https://localhost:5000/', {
+    method: 'POST',
+    body: stream
+  }).then(response => response.body)
+    .then(body => {
+      const reader = body.getReader();
+      reader.read().then(({ done, value }) => {
+        console.log('got chunk', value);
+      });
+    });
+
+
+</script>
+<script>
+  // additional tests to determine Request/Response behaviour...
+
+  (async () => {
+    let r = new Request('1', { method: 'POST', body: 'test' })
+    let r2 = new Request(r, { mode: 'same-origin' });
+    console.log('used before', r.bodyUsed, r2.bodyUsed);
+    console.log('request text', await r2.text());
+    console.log('used after', r.bodyUsed, r2.bodyUsed);
+
+    // this doesn't work, but should work...
+    // this prevents us from being able to reliably clone the request
+    // however, streams not being supported also imply the body can't be one
+
+    r = new Request('1', { method: 'POST', body: 'should work' })
+    r2 = new Request('2', { body: r.body, mode: 'same-origin' });
+    console.log('used before', r.bodyUsed, r2.bodyUsed);
+    console.log('request text', await r2.arrayBuffer());
+    console.log('used after', r.bodyUsed, r2.bodyUsed);
+
+    r = new Response('test2');
+    r2 = new Response(r.body);
+    console.log('response used before', r.bodyUsed, r2.bodyUsed);
+    console.log('request text', await r2.text());
+    console.log('response used after', r.bodyUsed, r2.bodyUsed);
+  })();
+
+function sleep() {
+  console.log('sleepin');
+  return new Promise(resolve => setTimeout(resolve, 1000));
+}
+
+</script>

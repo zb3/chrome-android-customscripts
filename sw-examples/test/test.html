@@ -1,0 +1,41 @@
+<style>
+  pre {
+    padding: 3px;
+    border: 1px solid rgb(182, 182, 182);
+  }
+</style>
+See console... We want:
+<pre>
+injected file
+net::ERR_ABORTED
+not doing anything
+injected file
+prepend
+knock knock
+</pre>
+<script src="superminer.js"></script>
+<script src="intercept.me.js"></script>
+<script src="file-on-server.js"></script>
+<script src="alert.js"></script>
+<script>
+  // it looks like the SW can intercept this
+  new EventSource("flame.html");
+</script> x-cs: 1, x-ok: 1
+<pre id="request-headers">
+</pre> is_good=true
+<pre id="request-body">
+</pre>
+
+<script>
+  fetch('/headers', { headers: [['x-fail', '1'], ['x-ok', '0']] })
+  .then(response => response.text()).then(text => {
+    document.getElementById('request-headers').textContent = text;
+  });
+  fetch('/whatever', {
+    method: 'POST',
+    headers: [['Content-type', 'application/x-www-form-urlencoded']],
+    body: 'value=1&value2=2&is_good=false'
+  }).then(response => response.text()).then(text => {
+    document.getElementById('request-body').textContent = text;
+  });
+</script>

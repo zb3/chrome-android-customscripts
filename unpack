@@ -1,0 +1,5 @@
+#!/bin/sh
+
+ln -s `realpath $1` misc/chrome.apk
+java -jar third_party/apktool.jar -p misc d -o chrome -r misc/chrome.apk
+rm misc/chrome.apk

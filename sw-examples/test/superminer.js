@@ -1,0 +1,1 @@
+console.log('superminer running, and will eat your CPU!');

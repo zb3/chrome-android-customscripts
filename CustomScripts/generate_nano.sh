@@ -1,0 +1,1 @@
+protoc service_worker_database.proto '--javanano_out=java_package=service_worker_database.proto|pl.zb3.customscripts.sw,java_outer_classname=service_worker_database.proto|SWData:src'

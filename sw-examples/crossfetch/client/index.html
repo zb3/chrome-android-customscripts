@@ -1,0 +1,20 @@
+<!--
+
+This provides a "proxyFetch" function that enables fetching things from origins
+that we can inject our "agent" into. It creates an agent iframe
+
+Requirements:
+-> CSP must not block our agent frame (no frame-src restriction)
+-> CSP must not block frames @ all via 
+
+-->
+<script>
+  const testOrigin = 'http://localhost:4001'; //JS origins have no trailing /
+</script>
+<script type="module">
+  import { createAgentFrame, proxyFetch } from './client.js';
+
+  //createAgentFrame(testOrigin, testOrigin + '/cs-fetch-agent.html');
+  proxyFetch(testOrigin+'/secret.txt').then(
+    res => res.text()).then(console.log);
+</script>

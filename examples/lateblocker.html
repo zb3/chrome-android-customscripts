@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>wow</title>
+</head>
+
+<body>
+  <marquee>
+    marquee rocks!
+  </marquee>
+  <marquee direction=right scrollamount=12>
+    one marquee element is not enough
+  </marquee>
+  <br><br>
+  <marquee direction=right>m</marquee><marquee direction=right>a</marquee>
+  <marquee direction=right>r</marquee><marquee direction=right>q</marquee>
+  <marquee direction=right>u</marquee><marquee direction=right>e</marquee>
+  <marquee direction=right>e</marquee>
+</body>
+
+<script src="generic-blocker.js" async defer data-blocker-config="1">
+  0, {
+    filterElements: [
+      'marquee',
+    ],
+    lateStart: true // try setting this to false...
+  }
+</script>
+
+</html>

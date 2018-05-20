@@ -1,0 +1,5 @@
+__pycache__/
+/chrome/
+/CustomScripts/nbproject/private/
+/CustomScripts/build/
+/CustomScripts/dist/

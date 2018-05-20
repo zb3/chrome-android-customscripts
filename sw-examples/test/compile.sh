@@ -1,0 +1,1 @@
+python ../compile-swbase.py test.cfg.js compiled.js ../

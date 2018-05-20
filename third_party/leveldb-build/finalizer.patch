@@ -1,0 +1,35 @@
+--- leveldb/leveldb/src/main/java/org/iq80/leveldb/util/Finalizer.java	2018-04-23 10:20:58.047953045 +0200
++++ leveldb-patched/leveldb/src/main/java/org/iq80/leveldb/util/Finalizer.java	2018-04-21 15:21:47.234354755 +0200
+@@ -22,6 +22,7 @@
+ 
+ import java.lang.ref.PhantomReference;
+ import java.lang.ref.ReferenceQueue;
++import java.util.Enumeration;
+ import java.util.concurrent.Callable;
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.ExecutorService;
+@@ -98,11 +99,15 @@
+         if (executor != null) {
+             executor.shutdownNow();
+         }
+-        for (FinalizerPhantomReference<T> r : references.keySet()) {
++        
++        //PATCH: keysetview not supported on android
++        for (Enumeration<FinalizerPhantomReference<T>> e = references.keys();
++                e.hasMoreElements();) {
++            FinalizerPhantomReference<T> r = e.nextElement();
+             try {
+                 r.cleanup();
+             }
+-            catch (Exception e) {
++            catch (Exception ex) {
+             }
+         }
+     }
+@@ -186,4 +191,4 @@
+             }
+         }
+     }
+-}
++}
+\ No newline at end of file

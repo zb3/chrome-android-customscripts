@@ -1,0 +1,12 @@
+diff -ru leveldb/leveldb/src/main/java/org/iq80/leveldb/impl/DbImpl.java leveldb-patched/leveldb/src/main/java/org/iq80/leveldb/impl/DbImpl.java
+--- leveldb/leveldb/src/main/java/org/iq80/leveldb/impl/DbImpl.java	2018-04-21 16:48:56.259675733 +0200
++++ leveldb-patched/leveldb/src/main/java/org/iq80/leveldb/impl/DbImpl.java	2018-04-21 17:20:09.498197296 +0200
+@@ -1166,7 +1166,7 @@
+         long currentEntries = compactionState.builder.getEntryCount();
+         compactionState.builder.finish();
+ 
+-        long currentBytes = compactionState.builder.getFileSize();
++        long currentBytes = compactionState.builder.getFileSize() - SIZE_OF_INT;
+         compactionState.currentFileSize = currentBytes;
+         compactionState.totalBytes += currentBytes;
+ 

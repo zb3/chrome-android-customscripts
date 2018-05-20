@@ -1,0 +1,10 @@
+--- leveldb/leveldb/pom.xml	2018-04-22 18:41:53.949158196 +0200
++++ leveldb-patched/leveldb/pom.xml	2018-04-22 18:34:47.886771951 +0200
+@@ -43,6 +43,7 @@
+         <dependency>
+             <groupId>com.google.guava</groupId>
+             <artifactId>guava</artifactId>
++            <version>24.1-android</version>
+         </dependency>
+ 
+         <!-- for testing -->
