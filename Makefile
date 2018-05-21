@@ -7,7 +7,7 @@ BAKSMALI=third_party/baksmali.jar
 BT_DIR=third_party/build-tools/
 KEYSTORE=misc/release-key.keystore
 KEYSTORE_PWD=pass:dummy123
-APK=chrome/dist/chrome.apk
+APK=apk/patched.apk
 PROJECT=CustomScripts
 JARDIR=$(PROJECT)/dist
 
@@ -45,7 +45,8 @@ keystore:
 
 #apktool also checks modtime
 apk: patch keystore
-	java -jar $(APKTOOL) -p misc b chrome
+	mkdir -p `dirname $(APK)`
+	java -jar $(APKTOOL) -p misc b chrome -o $(APK)
 	zipalign -fpv 4 $(APK) $(APK)_aligned
 	rm $(APK)
 	mv $(APK)_aligned $(APK)

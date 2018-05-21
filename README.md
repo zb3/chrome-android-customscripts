@@ -82,7 +82,7 @@ What `make` does, simplified:
   * patches stuff using `patch.py` which then copies the code to `chrome/smali` and `chrome/smali_classes2` folders
   * repacks the apk using apktool, then zipalign and sign
     
-If it somehow succeeds, the APK, **chrome/dist/chrome.apk**, is ready to be installed (or copied directly if the package name matches)
+If it somehow succeeds, the APK, **apk/patched.apk**, is ready to be installed (or copied directly if the package name matches)
 
 ### Using CS
 * Injecting scripts
