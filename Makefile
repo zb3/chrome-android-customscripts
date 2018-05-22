@@ -14,7 +14,7 @@ JARDIR=$(PROJECT)/dist
 export PATH := $(PATH):$(BT_DIR)
 
 all: apk
-
+java: $(JARDIR)/out
 
 #Compile the source using normal java (1.7)
 
@@ -63,4 +63,4 @@ totalclean: clean
 	rm -rf chrome
 
 
-.PHONY: patch keystore apk clean cleanmore totalclean
+.PHONY: java patch keystore apk clean cleanmore totalclean
