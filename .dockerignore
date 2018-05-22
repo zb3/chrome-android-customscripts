@@ -1,0 +1,13 @@
+__pycache__/
+/.git/
+/CustomScripts/build/
+/CustomScripts/dist/
+/CustomScripts/nbproject/private/
+/chrome/
+/examples/
+/sw-examples/
+*.apk
+.gitignore
+.dockerignore
+Dockerfile
+README.md
