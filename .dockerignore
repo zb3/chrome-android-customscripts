@@ -1,5 +1,6 @@
 __pycache__/
 /.git/
+/apk/
 /CustomScripts/build/
 /CustomScripts/dist/
 /CustomScripts/nbproject/private/
