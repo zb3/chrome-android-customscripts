@@ -15,17 +15,16 @@ import org.chromium.content_public.browser.LoadUrlParams;
 
 import pl.zb3.customscripts.sw.SWManager;
 
-
 public final class CustomScriptsManager implements WindowAndroid.PermissionCallback {
+
     // begin flags - these are set when patching
     static boolean HAS_SW = true;
     static boolean INSECURE = false;
     // end flags
-   
+
     final ArrayList<CustomScript> customScripts = new ArrayList<>();
-    
+
     static volatile CustomScriptsManager instance = null;
-    
 
     public static void init(WindowAndroid wa, Context ctx) {
         if (instance == null) {
@@ -39,12 +38,12 @@ public final class CustomScriptsManager implements WindowAndroid.PermissionCallb
 
     private CustomScriptsManager(WindowAndroid wa, Context ctx) {
         if (!INSECURE) {
-            loadScripts(ctx.getFilesDir());            
-        }
-        else
+            loadScripts(ctx.getFilesDir());
+        } else {
             checkPermissionsAndLoad(wa);
+        }
     }
-    
+
     CustomScriptsManager() {
 
     }
@@ -70,7 +69,7 @@ public final class CustomScriptsManager implements WindowAndroid.PermissionCallb
             loadScripts();
         }
     }
-    
+
     void loadScripts() {
         File dir = Environment.getExternalStorageDirectory();
         loadScripts(dir);
@@ -81,7 +80,7 @@ public final class CustomScriptsManager implements WindowAndroid.PermissionCallb
         Log.d("chromemod", "looking for scripts in " + dir);
         loadScriptsFromFolder(dir);
     }
-    
+
     void loadScriptsFromFolder(File dir) {
         Object swm = null;
 
@@ -105,7 +104,7 @@ public final class CustomScriptsManager implements WindowAndroid.PermissionCallb
                 if (file.code != null) {
                     try {
                         customScripts.add(new CustomScript(file));
-                    } catch(CustomScript.NoPatternsException e) {
+                    } catch (CustomScript.NoPatternsException e) {
                         Log.d("chromemod", "no patterns found in " + fileName);
                     }
 
@@ -125,25 +124,6 @@ public final class CustomScriptsManager implements WindowAndroid.PermissionCallb
         return instance;
     }
 
-
-
-    String codeForURL(String url) {
-        Log.d("chromemod", "codeForURL called with: " + url);
-
-        url = URLUtils.ensureSlashInURL(url);
-
-        String code = null;
-        
-        for (CustomScript cs: customScripts) {
-            if (cs.matchesURL(url)) {
-                code = code == null ? cs.code : code + "\n" + cs.code;
-            }
-        }
-
-        return code;
-    }
-
-    
     public static void executeJS(WebContents wc, String js) {
         if (js == null) {
             return;
@@ -179,10 +159,13 @@ public final class CustomScriptsManager implements WindowAndroid.PermissionCallb
         return new WebContentsObserver(wc) {
             @Override
             public void documentAvailableInMainFrame() {
-                String cs = CustomScriptsManager.this.codeForURL(
-                        wc.getVisibleUrl());
+                String url = URLUtils.ensureSlashInURL(wc.getVisibleUrl());
 
-                CustomScriptsManager.executeJS(wc, cs);
+                for (CustomScript cs : customScripts) {
+                    if (cs.matchesURL(url)) {
+                        CustomScriptsManager.executeJS(wc, cs.code);
+                    }
+                }
             }
 
             // too early
@@ -195,8 +178,6 @@ public final class CustomScriptsManager implements WindowAndroid.PermissionCallb
 
                 //Log.d("chromemod", "DSN: starting loop for "+url);
             }
-            
-
 
             /*
             public void navigationEntryCommitted() {

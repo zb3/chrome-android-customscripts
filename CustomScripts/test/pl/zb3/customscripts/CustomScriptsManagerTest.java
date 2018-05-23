@@ -20,9 +20,6 @@ public class CustomScriptsManagerTest {
     
     @Test
     public void testGeneral() throws IOException {
-        /*
-        
-        */
         File csf = testFolder.newFolder("CustomScripts");
         
         CustomScriptsManager csm = new CustomScriptsManager();
@@ -49,12 +46,12 @@ public class CustomScriptsManagerTest {
 
         assertEquals(2, csm.customScripts.size());
         
-        assertNull(csm.codeForURL("http://nonono.com/"));
+        assertFalse(csm.customScripts.get(0).matchesURL("http://nonono.com/"));
+        assertFalse(csm.customScripts.get(1).matchesURL("http://nonono.com/"));
         
-        String code = csm.codeForURL("https://test.zb3.com");
-        assertTrue(code.equals("code1();\n\ncode2();\n") || 
-                code.equals("code2();\n\ncode1();\n"));
-            }
+        assertTrue(csm.customScripts.get(0).matchesURL("https://test.zb3.com/"));
+        assertTrue(csm.customScripts.get(1).matchesURL("https://test.zb3.com/"));
+    }
     /*
     @Test
     public void testCodeForURL() {
