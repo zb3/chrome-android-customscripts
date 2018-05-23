@@ -1,19 +1,21 @@
 # CustomScripts
 
-This is an attempt at patching mobile chrome to inject scripts into websites. Note the experimental nature of this project, it was built mainly to test if something like that can be possible, and to see how. It works, but it has many limitations, and therefore it can't be considered a tool to run GreaseMonkey scripts for chrome on Android. Also, **it's not an ad blocker** and not a "privacy" related fork of the browser.
+This project provides a **limited** support for running userscripts in Chrome on Android. This is done by patching the APK by injecting additional code. No recompilation is needed, only the Java part is patched.
 
-It was "tested" against Chrome 66 (but see constraints), and **there's a high chance it won't work with newer versions**.
-Hopefully, some parts of this can be reused for other purposes... 
+This is only an experiment (a fun one), so while this thing works (with many limitations) on Chrome 66, **there's a high chance it won't work with newer versions**. After all, it relies on internal APIs.
 
-CS can also inject... Service Workers. Service Workers are better at blocking requests, however target origins must be known before injecting (technically, this part could be done outside the app)
+CS can also inject... Service Workers. Service Workers are better at blocking requests, however target origins must be known before injecting (technically, this part could be done outside the app).
 
 ## Constraints
+Unfortunately, some necessary interfaces are not exposed to the java part, that's why CS is barely useful. I wish this list was shorter...
+
 * limited capabilities compared to GM:
     * injected scripts/serviceworkers have no additional permissions (CSP applies to them)
     * scripts cannot be injected into frames
     * scripts cannot be injected at `document-start` which makes CS unsuitable for blocking scripts and other page functionality
     * not directly compatible with some userscripts (different url pattern, no GM_ functions)
     * scripts cannot store data (that pages can't access)
+* currently all scripts are loaded into memory (stored as... utf16?) when the browser starts, this needs to be fixed asap 
 * Service Workers can only be injected into origins directly specified, no wildcards possible
 * modifying a script currently requires restarting the browser
 * requires at least Android L (can be worked around though, problems with multidex and possibly other)
@@ -24,58 +26,69 @@ CS can also inject... Service Workers. Service Workers are better at blocking re
 ## How to use
 
 1. Download the original APK
-2. Use this repo to produce the patched APK (see building), which can optionally have a different package name
+2. Use this tool to produce the patched APK (see below)
+a) Delete the original app, or:
+b) Specify a new package name when patching
 3. Install that
 4. Do some magic to produce injectable scripts (see usage)
-5. Put them in the approporiate directory (see below)
+5. Put them in the approporiate directory (see below, depends on whether the device is rooted)
 6. It works (except when it doesn't)
+
+Note that if your device is not rooted, you will need to pass an additional `INSECURE=1` option explained below.
+
+
+### Patching the APK
+
+
+<details open>
+<summary><b>Using docker</b></summary>
+
+The container needs access to the input APK, and writes the patched one into `/app/apk/patched.apk`.
+
+General usage of the image is:
+```
+docker run --rm -v HOST_OUTPUT_DIR:/app/apk/ -v INPUT_DIR:/anywhere/ zb3pl/chrome-android-customscripts CONTAINER_APK_PATH [MAKE_OPTIONS]
+```
+You can also start a shell by passing `-it` to `docker run`.
+
+For example, if you want to patch `/home/h4x0r/chrome.apk` and write the output into `/tmp/`, this should do it:
+```
+docker run --rm -v /tmp/:/app/apk/ -v /home/h4x0r/:/chrome/ zb3pl/chrome-android-customscripts /chrome/chrome.apk [MAKE_OPTIONS]
+```
+This should create `/tmp/patched.apk`
+
+</details>
+
+
+
+
+<details>
+<summary><b>Directly on linux</b></summary>
 
 ### Requirements
 
-To be able to patch the APK, you'll need (at least) these installed:
-  * a shell compatible with bash
+You'll need (at least) these installed:
   * Python 3
   * Make
-  * Java (+jdk for generating keystores)
+  * Java 7 or 8 (+jdk for generating keystores)
   * Apache Ant
 
-**But** if your OS is not linux, you'll need to remove the `third_party/build-tools` directory and download a copy for your OS
-
-### Building
 
 ```
 git clone https://github.com/zb3/chrome-android-customscripts
 cd chrome-android-customscripts
 ```
 
-Unpack the original APK using apktool into chrome folder:
+Unpack the original APK using apktool into the `chrome` folder:
 ```
 ./unpack APK_FILE
 ```
 
-Patch it using the `make` command. There are two variants.   
-* For rooted devices
-  ```
-  make
-  ```
-  and then CS will look for scripts in the application's internal storage directory, usually `/data/user/0/PACKAGE/files/CustomScripts`.
-
-* Insecure variant for non-rooted devices:
-  ```
-  make INSECURE=1
-  ```
-  and then CS will look for scripts in the external storage directory, usually  `/storage/emulated/0/CustomScripts`. This is obviously insecure since other apps can use this to interfere with your browser.
-
-In both cases, you can find where CS looks for scripts using `adb logcat | grep chromemod | grep`
-  
-Often you'll need to pass another argument to make - `NEWPKG` which let's you change resulting package name. If you don't do this, the app won't install unless you uninstall the previous version (signature mismatch), which is sometimes impossible without root access (system chrome app).
+Patch it using the `make` command:
 ```
-make NEWPKG=com.me.chrome
+make MAKE_OPTIONS
 ```
 
-There's also `NO_SW=1` - use this to build without service workers support. Maybe this way the resulting APK won't crash all the time
-   
-   
 What `make` does, simplified:
   * compiles java source code using Ant (if modified)
   * disassembles that into smali format
@@ -83,6 +96,30 @@ What `make` does, simplified:
   * repacks the apk using apktool, then zipalign and sign
     
 If it somehow succeeds, the APK, **apk/patched.apk**, is ready to be installed (or copied directly if the package name matches)
+
+</details>
+
+
+### Patch options (`MAKE_OPTIONS`)
+
+Separate them by spaces.
+
+* `INSECURE=1` - make CS read from external storage that is accessible to other apps. Currently needed for non-rooted devices
+* `NEWPKG=new.package.name` - this makes the patched APK install under different package name. Since the patched APK has a different signature, you must use this if you don't want to uninstall the original app (well, unless you modify `packages.xml`)
+* `NO_SW=1` - disable support for injecting Service Workers. Use this if the app crashes, maybe this will help :) 
+
+
+### Where to put scripts
+
+* Rooted: (without `INSECURE=1`)
+`CustomScripts` in application's internal storage directory, usually `/data/user/0/PACKAGE/files/CustomScripts`.
+
+* With `INSECURE=1`:
+`CustomScripts` in external storage directory, usually  `/storage/emulated/0/CustomScripts`. This is obviously... insecure since other apps can use this to interfere with your browser.
+
+You can always find where CS really looks for scripts using `adb logcat | grep chromemod | grep looking` before starting the app.
+
+
 
 ### Using CS
 * Injecting scripts
