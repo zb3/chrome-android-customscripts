@@ -46,7 +46,7 @@ def main():
             res_match = resource_pat.match(value)
             res_name = res_match[1]
             res_url = res_match[2]
-            resources[res_name] = {'url': res_url}
+            resources[res_name] = res_url
             continue
 
           if name in ('url', 'match', 'include', 'exclude'):
@@ -62,16 +62,27 @@ def main():
     wf.write(b'\n(function(){')
 
     for res_name in resources:
-      print('res', res_name)
-      url = resources[res_name]['url']
-      with urllib.request.urlopen(url) as response:
-        resources[res_name]['content'] = base64.b64encode(response.read()).decode('ascii')
+      loc = resources[res_name]
 
-    if b'GM_' in file_content or b'GM.' in file_content:
+      content, ctype = b'', 'application/octet-stream'
+
+      if '//' not in loc:
+        with open(loc, 'rb') as rf:
+          content = rf.read()
+      else:
+        print('Downloading resource', loc)
+        with urllib.request.urlopen(loc) as response:
+          content = response.read()
+          ctype = response.headers['content-type']
+
+      resources[res_name] = 'data:'+ctype+';base64,'+base64.b64encode(content).decode('ascii')
+
+    if b'GM_' in file_content or b'GM.' in file_content or b'unsafeWindow' in file_content:
       with open(shim_file, 'rb') as shim:
         add_content(wf, compile_shim(shim.read(), attributes, resources))
       
     for url in required_urls:
+      print('Downloading', url)
       with urllib.request.urlopen(url) as response:
         add_content(wf, response.read())
 

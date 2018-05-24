@@ -3,6 +3,7 @@ var GM_info = {
   script: /#ATTRS#/
 };
 
+var unsafeWindow = window;
 var __GM_RESOURCE_MAP = /#RESOURCES#/;
 var GM_log = console.log;
 
@@ -18,11 +19,6 @@ function GM_addStyle(css) {
   }
   return null;
 }
-
-function GM_registerMenuCommand() {
-  //unsupported
-}
-
 
 // XHR + get/setValue shim taken from https://gist.github.com/arantius/3123124
 // #region
@@ -162,19 +158,52 @@ function GM_openInTab(url) {
 }
 
 function GM_getResourceURL(name) {
-  return __GM_RESOURCE_MAP[name] && __GM_RESOURCE_MAP[name].url;
+  return __GM_RESOURCE_MAP[name];
 }
 
 function GM_getResourceText(name) {
-  return __GM_RESOURCE_MAP[name] && atob(__GM_RESOURCE_MAP[name].content);
+  return __GM_RESOURCE_MAP[name] && atob(__GM_RESOURCE_MAP[name].slice(
+    __GM_RESOURCE_MAP[name].indexOf(',')+1));
 }
 
+function GM_setClipboard(text) {
+  var input = document.createElement('textarea');
+  (document.body || document.documentElement).appendChild(input);
+  input.value = text;
+  input.focus();
+  input.select();
+  document.execCommand('Copy');
+  input.remove();
+}
+
+// unsupported
+function GM_registerMenuCommand() {};
+function GM_unregisterMenuCommand() {};
+function GM_notification() {};
+
+function __promisify(f) {
+  return function() {
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(f.apply(this, arguments));
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+}
+
+GM.log = GM_log;
 GM.info = GM_info;
-GM.addStyle = GM_addStyle;
-GM.getValue = GM_getValue;
-GM.setValue = GM_setValue;
-GM.xmlhttpRequest = GM_xmlhttpRequest;
+GM.addStyle = GM_addStyle; 
+GM.getValue = __promisify(GM_getValue);
+GM.setValue = __promisify(GM_setValue);
+GM.deleteValue = __promisify(GM_deleteValue);
+GM.listValues = __promisify(GM_listValues);
+GM.xmlHttpRequest = GM_xmlhttpRequest; // different case
 GM.openInTab = GM_openInTab;
+GM.getResourceUrl = __promisify(GM_getResourceURL); // different case
+GM.setClipboard = GM_setClipboard;
 GM.registerMenuCommand = GM_registerMenuCommand;
-GM.getResourceURL = GM_getResourceURL;
-GM.getResourceText = GM_getResourceText;
+GM.unregisterMenuCommand = GM_unregisterMenuCommand;
+GM.notification = GM_notification;
