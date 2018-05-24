@@ -10,10 +10,9 @@ CS can also inject... Service Workers. Service Workers are better at blocking re
 Unfortunately, some necessary interfaces are not exposed to the java part, that's why CS is barely useful. I wish this list was shorter...
 
 * limited capabilities compared to GM:
-    * injected scripts/serviceworkers have no additional permissions (CSP applies to them)
+    * injected scripts/serviceworkers have no additional permissions (SOP and CSP are enforced)
     * scripts cannot be injected into frames
     * scripts cannot be injected at `document-start` which makes CS unsuitable for blocking scripts and other page functionality
-    * not directly compatible with some userscripts (different url pattern, no GM_ functions)
     * scripts cannot store data (that pages can't access)
 * currently all scripts are loaded into memory (stored as... utf16?) when the browser starts, this needs to be fixed asap 
 * Service Workers can only be injected into origins directly specified, no wildcards possible
@@ -30,9 +29,10 @@ Unfortunately, some necessary interfaces are not exposed to the java part, that'
 a) Delete the original app, or:
 b) Specify a new package name when patching
 3. Install that
-4. Do some magic to produce injectable scripts (see usage)
+4. Do some magic to produce injectable scripts (in most cases you need to transform them first, see usage)
 5. Put them in the approporiate directory (see below, depends on whether the device is rooted)
-6. It works (except when it doesn't)
+6. Restart the browser
+7. It works (except when it doesn't)
 
 Note that if your device is not rooted, you will need to pass an additional `INSECURE=1` option explained below.
 
@@ -124,6 +124,8 @@ You can always find where CS really looks for scripts using `adb logcat | grep c
 ### Using CS
 * Injecting scripts
 
+  **Note**: if you just want to inject an userscript, see [Injecting userscripts](#injecting-userscripts) the script uses things like `@require`, `@grant` or some `GM_* functions, see 
+
   Every script needs a metadata block with at least one url pattern, then a new line and finally the content. Metadata block has syntax similar to classic userscripts:
   ```
   // @url *://*.domain.com/*
@@ -134,8 +136,6 @@ You can always find where CS really looks for scripts using `adb logcat | grep c
   URL patterns use "urlRegex" string syntax (see below), which is similar to the classic userscript pattern, but not the same. For example, `?` will not work, use `[?]` instead.
 
   `@run-at` can be `document-end` (default) or `document-idle`. Other values not supported.
-
-  **Note**: things like `@require`, `@connect` or `GM_*` functions aren't supported.
 
   Injecting at `document-start` isn't supported. This can be achieved only by injecting a Service Worker, which requires the target origin to be known.
   
@@ -149,6 +149,15 @@ You can always find where CS really looks for scripts using `adb logcat | grep c
   Also, this is a very low-level interface. To generate a SW that will inject scripts into documents, intercept/block network request, see [swbase](./sw-examples/). You can also get a limited support for cross-origin requests, see [crossfetch](./sw-examples/crossfetch)
 
 To instruct CS to inject files, copy them into the directory CS is looking for scripts :)
+
+## Injecting userscripts
+To inject scripts that use `@require`, `@resource` or some GM apis, you need to transform them first using `gm-compat/gm-compile.py`, like this:
+```
+python3 gm-compat/gm-compile.py INPUT_FILE OUTPUT_FILE
+```
+Then try injecting the output file.
+
+However, this isn't magic. This just downloads and inlines all dependencies, and polyfills **some** GM specific functions (like `GM_addStyle`). Scripts gain no new privileges this way, so for instance cross-origin XHR won't work and `GM_setValue` is per-domain. See [gm-compat](./gm-compat)
 
 
 ## urlRegex
