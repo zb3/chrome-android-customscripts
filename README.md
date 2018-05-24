@@ -124,7 +124,7 @@ You can always find where CS really looks for scripts using `adb logcat | grep c
 ### Using CS
 * Injecting scripts
 
-  **Note**: if you just want to inject an userscript, see [Injecting userscripts](#injecting-userscripts) the script uses things like `@require`, `@grant` or some `GM_* functions, see 
+  **Note**: if you just want to inject an userscript, see [Injecting userscripts](#injecting-userscripts)
 
   Every script needs a metadata block with at least one url pattern, then a new line and finally the content. Metadata block has syntax similar to classic userscripts:
   ```
