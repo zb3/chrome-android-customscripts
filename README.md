@@ -147,18 +147,17 @@ You can always find where CS really looks for scripts using `adb logcat | grep c
   ```
   Wildcards aren't supported here.
   Also, this is a very low-level interface. To generate a SW that will inject scripts into documents, intercept/block network request, see [swbase](./sw-examples/). You can also get a limited support for cross-origin requests, see [crossfetch](./sw-examples/crossfetch)
+* <a id="injecting-userscripts"></a> **Injecting userscripts**
+
+  To inject scripts that use `@require`, `@resource` or some GM apis, you need to transform them first using `gm-compat/gm-compile.py`, like this:
+  ```
+  python3 gm-compat/gm-compile.py INPUT_FILE OUTPUT_FILE
+  ```
+  Then try injecting the output file.
+
+  However, this isn't magic. This just downloads and inlines all dependencies, and polyfills **some** GM specific functions (like `GM_addStyle`). Scripts gain no new privileges this way, so for instance cross-origin XHR won't work and `GM_setValue` is per-domain. See [gm-compat](./gm-compat)
 
 To instruct CS to inject files, copy them into the directory CS is looking for scripts :)
-
-## Injecting userscripts
-To inject scripts that use `@require`, `@resource` or some GM apis, you need to transform them first using `gm-compat/gm-compile.py`, like this:
-```
-python3 gm-compat/gm-compile.py INPUT_FILE OUTPUT_FILE
-```
-Then try injecting the output file.
-
-However, this isn't magic. This just downloads and inlines all dependencies, and polyfills **some** GM specific functions (like `GM_addStyle`). Scripts gain no new privileges this way, so for instance cross-origin XHR won't work and `GM_setValue` is per-domain. See [gm-compat](./gm-compat)
-
 
 ## urlRegex
 urlRegex can be either a `RegExp` instance or a string. If it's a string, it's converted to `RegExp` with these modifications:
