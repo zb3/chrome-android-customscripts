@@ -5,6 +5,7 @@
 // @version        0.0.1
 // @require        http://localhost:4004/file1.js
 // @require        http://localhost:4004/file1.js
+// @require        file1.js
 // @resource       test http://localhost:4004/file2.js
 // @resource       compiler ./gm-compile.py
 // ==/UserScript==
@@ -39,11 +40,9 @@ GM_log('starting async tests');
 
 // since we can do things like await "notapromise", use .then for testing
 
-// storage will fail without a server
-
 GM.setValue('v', '123').then(x => GM.getValue('v'))
-  .then(v => GM_log('got', v),GM.deleteValue('v')).then(x => GM.listValues())
-  .then(v => GM_log('values', v),GM.getResourceUrl('compiler'))
+  .then(v => (GM_log('got', v),GM.deleteValue('v'))).then(x => GM.listValues())
+  .then(v => (GM_log('values', v),GM.getResourceUrl('compiler')))
   .then(v => GM_log('compiler', v));
 
 unsafeWindow.copyText = function() {

@@ -1,1 +1,1 @@
-console.log('should be included twice');
+console.log('should be included 3 times');

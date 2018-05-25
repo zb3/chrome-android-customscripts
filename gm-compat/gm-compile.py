@@ -19,17 +19,26 @@ qm_pat = re.compile(r'(?<!\[)\?')
 
 resource_pat = re.compile(r'^(\S+)\s*(\S+)$')
 
+
 def main():
   input = sys.argv[1]
   output = sys.argv[2]
 
+  input_url = input if '//' in input else None
+
+  def open_input():
+    if input_url:
+      return urllib.request.urlopen(input_url)
+    else:
+      return open(input, 'rb')
+
   with open(output, 'wb') as wf:
-    required_urls = []
+    dependencies = []
     file_content = None
     attributes = {}
     resources = {}
 
-    with open(input, 'rb') as f:
+    with open_input() as f:
       for line in f:
         attr_match = attribute_pat.match(line)
         if attr_match:
@@ -39,7 +48,7 @@ def main():
           attributes[name] = value
 
           if name == 'require':
-            required_urls.append(value)
+            dependencies.append(value)
             continue
 
           if name == 'resource':
@@ -63,32 +72,45 @@ def main():
 
     for res_name in resources:
       loc = resources[res_name]
-
-      content, ctype = b'', 'application/octet-stream'
-
-      if '//' not in loc:
-        with open(loc, 'rb') as rf:
-          content = rf.read()
-      else:
-        print('Downloading resource', loc)
-        with urllib.request.urlopen(loc) as response:
-          content = response.read()
-          ctype = response.headers['content-type']
-
+      content, ctype = fetch_resource(loc, input_url)
       resources[res_name] = 'data:'+ctype+';base64,'+base64.b64encode(content).decode('ascii')
 
     if b'GM_' in file_content or b'GM.' in file_content or b'unsafeWindow' in file_content:
       with open(shim_file, 'rb') as shim:
         add_content(wf, compile_shim(shim.read(), attributes, resources))
       
-    for url in required_urls:
-      print('Downloading', url)
-      with urllib.request.urlopen(url) as response:
-        add_content(wf, response.read())
+    for loc in dependencies:
+      content, _ = fetch_resource(loc, input_url)
+      add_content(wf, content)
 
     add_content(wf, file_content)
 
     wf.write(b'\n})();')
+
+
+def fetch_resource(loc, base_url=None):
+  content, ctype = b'', 'application/octet-stream'
+  
+  url = None
+
+  if '//' not in loc:
+    if base_url:
+      url = urllib.parse.urljoin(base_url, loc)
+  else:
+    url = loc
+  
+  if url:
+    print('Downloading', url)
+    with urllib.request.urlopen(url) as response:
+      content = response.read()
+      ctype = response.headers['content-type']
+      
+  else:
+    with open(loc, 'rb') as rf:
+      content = rf.read()
+        
+  return content, ctype
+
 
 def url_compat(value):
   if value.startswith('/') and value.endswith('/'):
@@ -96,15 +118,18 @@ def url_compat(value):
   
   return qm_pat.sub('[?]', value)
 
+
 def compile_shim(content, attrs, resources):
   content = content.replace(b'/#ATTRS#/', json.dumps(attrs).encode('utf8'))
   content = content.replace(b'/#RESOURCES#/', json.dumps(resources).encode('utf8'))
   return content
 
+
 def add_content(f, content):
   f.write(b'\n')
   f.write(content)
   f.write(b'\n')
+
 
 if __name__ == '__main__':
   main()
