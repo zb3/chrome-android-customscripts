@@ -169,8 +169,8 @@ public final class CustomScriptsManager implements WindowAndroid.PermissionCallb
             }
 
             // too early
-            public void didStartNavigation(
-                    String url, boolean isInMainFrame, boolean isSameDocument, boolean isErrorPage) {
+            public void didStartNavigation(String url, boolean isInMainFrame,
+                    boolean isSameDocument, boolean isErrorPage) {
 
                 if (!isInMainFrame || isErrorPage) {
                     return;
