@@ -151,7 +151,7 @@ You can always find where CS really looks for scripts using `adb logcat | grep c
 
   To inject scripts that use `@require`, `@resource` or some GM apis, you need to transform them first using `gm-compat/gm-compile.py`, like this:
   ```
-  python3 gm-compat/gm-compile.py INPUT_FILE OUTPUT_FILE
+  python3 gm-compat/gm-compile.py INPUT_FILE_OR_URL OUTPUT_FILE
   ```
   Then try injecting the output file.
 

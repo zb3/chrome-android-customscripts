@@ -2,7 +2,7 @@
 # gm-compat
 
 ```
-python gm-compile.py source destination
+python gm-compile.py source_file_or_url destination_file
 ```
 
 * Wraps script in an anonymous function to prevent scope pollution
