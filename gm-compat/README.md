@@ -7,8 +7,8 @@ python gm-compile.py source_file_or_url destination_file
 
 * Wraps script in an anonymous function to prevent scope pollution
 * Downloads and inlines dependencies specified by `@require` and `@resource` (but doesn't execute the latter)
-* Polyfills `unsafeWindow` and most of the GM APIs 
-* (CS specific) escapes `?` in url patterns (note/todo: this is not enough)
+* Polyfills `unsafeWindow` and most of the GM APIs
+* Compiles url patterns into regex form
 
 Supported APIs: (`GM_sth` implies `GM.sth` support)
 * `unsafeWindow` is just `window`, but it's the real one

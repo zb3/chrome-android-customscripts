@@ -1,3 +1,5 @@
+python3 url_compat.test.py || exit
+
 python3 -m http.server 4004 &
 
 SRV_PID=$!

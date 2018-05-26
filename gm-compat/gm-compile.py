@@ -14,8 +14,8 @@ if not os.path.exists(shim_file):
 attribute_pat = re.compile(br'^\s*//\s*@([a-zA-Z]+)\s*(.*\S)\s*$')
 end_pat = re.compile(br'^(//\s*==/UserScript==)?\s*$')
 
-#todo: only ? is escaped, but this is not enough
-qm_pat = re.compile(r'(?<!\[)\?')
+# input is url escaped
+escaped_url_pat = re.compile(r'^([^/]*)\\/\\/([^/]*)\\/(.*)$')
 
 resource_pat = re.compile(r'^(\S+)\s*(\S+)$')
 
@@ -115,8 +115,34 @@ def fetch_resource(loc, base_url=None):
 def url_compat(value):
   if value.startswith('/') and value.endswith('/'):
     return value
+
+  if value == '<all_urls>':
+    return '/^/'
+
+  # *://domain.com/* should not match https://evil.com/://domain.com/abc
+  # https://*.com/ should not match https://domain.de/something.com/
+  # google.* will match google.evil.com, but that pattern wouldn't normally work
+
+  pat = re.escape(value)
+
+  url_match = escaped_url_pat.match(pat)
+  if url_match:
+    proto, host, path = url_match.groups()
   
-  return qm_pat.sub('[?]', value)
+    proto = proto.replace(r'\*', r'[^/]*')
+    host = host.replace(r'\*', r'[^/]*')
+    path = path.replace(r'\*', r'.*')
+
+    if host.startswith(r'[^/]*\.'):
+      host = r'([^/]*\.)?' + host[7:]
+    
+    pat = proto + r'//' + host + r'/' + path
+    
+  else: # GM doesn't support these
+    pat = pat.replace(r'\*', '.*')
+
+  # the pattern is then directly used as a regex, this should be portable
+  return '/^'+pat+'$/'
 
 
 def compile_shim(content, attrs, resources):
