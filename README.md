@@ -106,8 +106,7 @@ Separate them by spaces.
 
 * `INSECURE=1` - make CS read from external storage that is accessible to other apps. Currently needed for non-rooted devices
 * `NEWPKG=new.package.name` - this makes the patched APK install under different package name. Since the patched APK has a different signature, you must use this if you don't want to uninstall the original app (well, unless you modify `packages.xml`)
-* `NO_SW=1` - disable support for injecting Service Workers. Use this if the app crashes, maybe this will help :) 
-
+* `ENABLE_SW=1` - enable support for injecting Service Workers.
 
 ### Where to put scripts
 
@@ -140,6 +139,8 @@ You can always find where CS really looks for scripts using `adb logcat | grep c
   Injecting at `document-start` isn't supported. This can be achieved only by injecting a Service Worker, which requires the target origin to be known.
   
 * Injecting service workers
+
+  **Note:** this requires `ENABLE_SW=1` option set.
 
   Instead of `@url`, use `@serviceworker`:
   ```

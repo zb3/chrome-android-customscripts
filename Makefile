@@ -1,4 +1,4 @@
-export NO_SW
+export ENABLE_SW
 export INSECURE
 export NEWPKG
 

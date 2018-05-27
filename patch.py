@@ -8,7 +8,7 @@ from patchlib import brsc
 #we compare patched files' contents, and restore modtime when they don't change
 #this is to avoid resmaling classes.dex
 
-no_sw = os.getenv('NO_SW')
+enable_sw = os.getenv('ENABLE_SW')
 insecure_mode = os.getenv('INSECURE')
 new_package_name = os.getenv('NEWPKG')
 
@@ -32,7 +32,7 @@ def main():
 
   set_class_flags(new_dir+csm_cls+'.smali', csm_cls, (
     ('INSECURE', insecure_mode),
-    ('NO_SW', no_sw)
+    ('HAS_SW', enable_sw)
   ))
 
   #needed?
@@ -66,10 +66,10 @@ def main():
   
   #code should check for sw classes at runtime, so it's safe to skip them
   
-  if no_sw:
+  if not enable_sw:
     shutil.rmtree(src2_dir+'pl/zb3/customscripts/sw')
   
-  if not no_sw:
+  if enable_sw:
     copytree(new_dir+'com/google/protobuf', src2_dir+'com/google/protobuf', False)
   
     #copy original (with one patch) leveldb library + deps
