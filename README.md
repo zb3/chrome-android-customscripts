@@ -17,9 +17,7 @@ Unfortunately, some necessary interfaces are not exposed to the java part, that'
 * currently all scripts are loaded into memory (stored as... utf16?) when the browser starts, this needs to be fixed asap 
 * Service Workers can only be injected into origins directly specified, no wildcards possible
 * modifying a script currently requires restarting the browser
-* requires at least Android L (can be worked around though, problems with multidex and possibly other)
-* not tested on Android versions other than M
-* tested only on heavily-modified Android
+* not tested on Android versions other than heavily-modified M
 * not guaranteed to work with chrome newer than 65, relies on internal APIs
 
 ## How to use
