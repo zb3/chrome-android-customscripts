@@ -6,6 +6,8 @@ This is only an experiment (a fun one), so while this thing works (with many lim
 
 CS can also inject... Service Workers. Service Workers are better at blocking requests, however target origins must be known before injecting (technically, this part could be done outside the app).
 
+[Internals](./Internals.md) page explains how CustomScripts works (code does it better).
+
 ## Constraints
 Unfortunately, some necessary interfaces are not exposed to the java part, that's why CS is barely useful. I wish this list was shorter...
 
