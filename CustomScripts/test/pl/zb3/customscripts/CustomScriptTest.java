@@ -76,6 +76,7 @@ public class CustomScriptTest {
         
         assertTrue(cs.matchesURL("http://test.google.com/"));
         assertTrue(cs.matchesURL("https://zb3.com/admin"));
+        assertFalse(cs.matchesURL("http://evil.com/test.google.com/admin"));
         assertFalse(cs.matchesURL("http://zb3.com/admin"));
         
     }

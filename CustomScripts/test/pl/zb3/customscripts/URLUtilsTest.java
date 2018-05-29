@@ -18,18 +18,18 @@ public class URLUtilsTest {
         //*://@google.com/*
         //https?://test.*.com/somefile.js*
         
-        assertEquals("^(.*://(.*\\.)?google\\.com/.*)$",
+        assertEquals("^([^/]+://([^/]*\\.)?google\\.com/.*)$",
                 URLUtils.compileRegex("*://*.google.com/*").toString());
         
-        assertEquals("^(.*://(.*\\.)?google\\.com/.*)$",
+        assertEquals("^([^/]+://([^/]*\\.)?google\\.com/.*)$",
                 URLUtils.compileRegex("*://@google.com/*").toString());
         
-        assertEquals("^(.*://((.*\\.)?g\\.com|(.*\\.)?b\\.com)/.*)$",
+        assertEquals("^([^/]+://(([^/]*\\.)?g\\.com|([^/]*\\.)?b\\.com)/.*)$",
                 URLUtils.compileRegex("*://(@g.com|@b.com)/*").toString());
         
-        assertEquals("^(https?://test\\..*\\.com/somefile\\.js.*)$",
+        assertEquals("^(https?://test\\..*\\.com/some[*]file\\.js.*)$",
                 URLUtils.compileRegex(
-                        "https?://test.*.com/somefile.js*").toString());
+                        "https?://test.*.com/some[*]file.js*").toString());
         
         assertEquals("^https?://test[.]*[.]com\\/somefile[.]js*$",
                 URLUtils.compileRegex(

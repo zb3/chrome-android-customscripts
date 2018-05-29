@@ -99,7 +99,7 @@ public final class CustomScriptsManager implements WindowAndroid.PermissionCallb
         for (File inFile : files) {
             String fileName = inFile.getName();
             if (fileName.endsWith(".js")) {
-                Log.d("chromemod", "adding from" + fileName);
+                Log.d("chromemod", "adding from " + fileName);
                 ScriptFile file = new ScriptFile(inFile);
                 if (file.code != null) {
                     try {

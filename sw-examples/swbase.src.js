@@ -134,8 +134,9 @@ function urlRegex(pattern) {
     pattern = pattern.slice(2);
 
   pattern = pattern.replace(/([^(])\./g, '$1\\.');
-  pattern = pattern.replace(/(^|[^)*])\*/g, '$1.*');
-  pattern = pattern.replace(/(^|[(|]|\/\/)(@|\.\*\\\.)/g, '$1(.*\\.)?');
+  pattern = pattern.replace(/(^|[^)*[])\*/g, '$1.*');
+  pattern = pattern.replace(/\.\*:\/\//g, '[^/]+://');
+  pattern = pattern.replace(/(^|[(|]|\/\/)(@|\.\*\\\.)/g, '$1([^/]*\\.)?');
   pattern = pattern.replace(/\^($|\)|\|)/g, '([?#].*)?$1');
 
   if (invert)

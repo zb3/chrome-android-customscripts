@@ -1,5 +1,7 @@
 const assert = require('assert').strict;
 
+// note: before matching, make sure that the URL has at least 3 slashes
+
 //todo: case-insensitive match? like ?i?pattern ?
 //future: consider ?!exclude||include -> ^(?!(exclude)$)(include)$
 
@@ -9,8 +11,9 @@ function urlRegex(pattern) {
     pattern = pattern.slice(2);
 
   pattern = pattern.replace(/([^(])\./g, '$1\\.');
-  pattern = pattern.replace(/(^|[^)*])\*/g, '$1.*');
-  pattern = pattern.replace(/(^|[(|]|\/\/)(@|\.\*\\\.)/g, '$1(.*\\.)?');
+  pattern = pattern.replace(/(^|[^)*[])\*/g, '$1.*');
+  pattern = pattern.replace(/\.\*:\/\//g, '[^/]+://');
+  pattern = pattern.replace(/(^|[(|]|\/\/)(@|\.\*\\\.)/g, '$1([^/]*\\.)?');
   pattern = pattern.replace(/\^($|\)|\|)/g, '([?#].*)?$1');
 
   if (invert)
@@ -20,24 +23,33 @@ function urlRegex(pattern) {
 }
 
 assert.equal(urlRegex('*://*.google.com/*') + '',
-  /^(.*:\/\/(.*\.)?google\.com\/.*)$/ + '');
+  /^([^/]+:\/\/([^/]*\.)?google\.com\/.*)$/ + '');
 
 assert.equal(urlRegex('*://@google.com/*') + '',
-  /^(.*:\/\/(.*\.)?google\.com\/.*)$/ + '');
+  /^([^/]+:\/\/([^/]*\.)?google\.com\/.*)$/ + '');
 
-assert.equal(urlRegex('*://(@google.com|@google.ru|*.g.pl)/*') + '',
-  /^(.*:\/\/((.*\.)?google\.com|(.*\.)?google\.ru|(.*\.)?g\.pl)\/.*)$/ + '');
+assert.equal(urlRegex('*://(@g.com|@g.ru|*.g.pl)/*') + '',
+  /^([^/]+:\/\/(([^/]*\.)?g\.com|([^/]*\.)?g\.ru|([^/]*\.)?g\.pl)\/.*)$/ + '');
 
 assert.equal(urlRegex('?!@google.com|@google.ru') + '',
-  /^(?!((.*\.)?google\.com|(.*\.)?google\.ru)$)/ + '');
+  /^(?!(([^/]*\.)?google\.com|([^/]*\.)?google\.ru)$)/ + '');
 
-assert.equal(urlRegex('@zb3.com') + '', /^((.*\.)?zb3\.com)$/ + '');
+assert.equal(urlRegex('@zb3.com') + '', /^(([^/]*\.)?zb3\.com)$/ + '');
 
-assert.equal(urlRegex('https?://test.*.com/some@file.js*') + '',
-  /^(https?:\/\/test\..*\.com\/some@file\.js.*)$/ + '');
+assert.equal(urlRegex('https?://test.*.com/some@[*]file.js*') + '',
+  /^(https?:\/\/test\..*\.com\/some@[*]file\.js.*)$/ + '');
 
 assert.equal(urlRegex('https?://test.*.com/some@file.js^') + '',
   /^(https?:\/\/test\..*\.com\/some@file\.js([?#].*)?)$/ + '');
+
+const basicPattern = urlRegex('*://(*.zb3|@test).com/*');
+assert(basicPattern.test('http://zb3.com/abc'));
+assert(basicPattern.test('http://x.zb3.com/'));
+assert(!basicPattern.test('http://evil.com/x.zb3.com/'));
+assert(basicPattern.test('http://test.test.com/abc123'));
+assert(!basicPattern.test('http://evil.com/x.test.com/'));
+assert(!basicPattern.test('http://evil.com/://x.test.com/'));
+assert(!basicPattern.test('http://evil.com/://zb3.com/'));
 
 const orPattern = urlRegex('zb3.com|zb3.net');
 assert(!orPattern.test('zb3.com.pl'));

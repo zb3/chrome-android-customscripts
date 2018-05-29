@@ -9,7 +9,9 @@ public class URLUtils {
     
     private static final Pattern PERCENT_SIGN = Pattern.compile("%");
     private static final Pattern URL_FIX_DOT = Pattern.compile("([^(])\\.");
-    private static final Pattern URL_FIX_STAR = Pattern.compile("(^|[^)*])\\*");
+    private static final Pattern URL_FIX_STAR
+            = Pattern.compile("(^|[^)*\\[])\\*");
+    private static final Pattern URL_FIX_PROTO = Pattern.compile("\\.\\*://");
     
     private static final Pattern URL_DGLOB = 
             Pattern.compile("(^|[(|]|//)(@|\\.\\*\\\\\\.)");
@@ -31,8 +33,8 @@ public class URLUtils {
             
         str = URL_FIX_DOT.matcher(str).replaceAll("$1\\\\.");
         str = URL_FIX_STAR.matcher(str).replaceAll("$1.*");
-        
-        str = URL_DGLOB.matcher(str).replaceAll("$1(.*\\\\.)?");
+        str = URL_FIX_PROTO.matcher(str).replaceAll("[^/]+://");
+        str = URL_DGLOB.matcher(str).replaceAll("$1([^/]*\\\\.)?");
         str = URL_FILE_PARAMS.matcher(str).replaceAll("([?#].*)?$1");
         
         if (invert)

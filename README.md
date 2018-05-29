@@ -163,8 +163,9 @@ To instruct CS to inject files, copy them into the directory CS is looking for s
 ## urlRegex
 urlRegex can be either a `RegExp` instance or a string. If it's a string, it's converted to `RegExp` with these modifications:
 * any `.` not preceded by `(` is escaped (dot is not a special character in most cases)
-* any `*` not preceded by `)` or `*` is replaced with `.*` (`*` works as a glob)
-* any `@` or `.*` at the begining or preceded by `//` or `(` or `|` is replaced with `(.*\.)?` (this is for matching the domain and its subdomains)
+* any `*` not preceded by `)`, `[` or `*` is replaced with `.*` (`*` works as a glob)
+* any `@` or `*.` at the begining or preceded by `//`, `(` or `|` is replaced with `([^/]*\.)?` (this is for matching the domain and its subdomains)
+* any `*://` is replaced with `[^/]+://` (this is for matching any protocol)
 * any `^` at the end or followed by `)` or `|` is replaced with `([?#].*)?` (this is to make `^` match optional query strings or hash parameters)
 * the expression is wrapped in `^()$`, or in `^(?!()$)` if it starts with `?!` (which is then stripped). This is to avoid the need for usual ^$ and also it allows us to invert the expression, so `?!abc` matches anything but `abc`
 
