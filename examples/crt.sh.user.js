@@ -2,16 +2,18 @@
 // @name        crt.sh links
 // @namespace   zb3.crtsh
 // @include     https://crt.sh/*
-// @version     1
+// @version     1.1
 // @run-at      document-end
 // ==/UserScript==
 
 
 function makeLinks() {
   for (const dtd of document.querySelectorAll('td.outer > table > tbody > tr > td')) {
-    if (/^[^<@.]+[.][^@<]+$/.test(dtd.innerHTML)) {
-      const url = dtd.innerHTML.trim();
-      dtd.innerHTML = '<a href="https://' + url + '">' + url + '</a>';
+    const text = dtd.innerHTML;
+    const match = text.match(/^\s*(?:.*\bCN=)?([*][.])?([^<@.]+[.][^<@\s]+)/);
+    
+    if (match) {
+      dtd.innerHTML = '<a href="https://' + match[2] + '">' + text.trim() + '</a>';
     }
   }
 }
@@ -19,4 +21,4 @@ function makeLinks() {
 if (document.readyState === 'loading')
   document.addEventListener('DOMContentLoaded', makeLinks);
 else
-  makeLinks();
+makeLinks();
